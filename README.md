@@ -13,6 +13,13 @@ A single self-contained HTML file that maps all **1,156 tools** from the Tsurugi
 
 ---
 
+<h3 align="center">
+  <a href="https://ironbranded.github.io/Microsoft-Defensive-Cloud-Atlas/" target="_blank" rel="noopener noreferrer">
+    🟢 NAVIGATE THE ATLAS 🟢
+  </a>
+</h3>
+
+---
 ## Features
 
 | Feature | Description |
