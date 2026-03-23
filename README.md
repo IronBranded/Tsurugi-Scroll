@@ -143,4 +143,4 @@ Imaging · Image Formats · Hashing · Fuzzy Hashing · Mounting · Timeline · 
 
 ## License
 
-This reference tool is an independent community project. All tool names, descriptions, and usage scenarios are sourced from the Tsurugi Linux project documentation. Tsurugi Linux is developed by its respective authors — see [tsurugi-linux.org](https://tsurugi-linux.org/) for licensing details.
+This reference tool is an independent community project. All tool names, descriptions, and usage scenarios are sourced from the Tsurugi Linux project documentation. Tsurugi Linux is developed by its respective authors. See [TSURUGI](https://tsurugi-linux.org/) for licensing details.
