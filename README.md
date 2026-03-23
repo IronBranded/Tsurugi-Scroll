@@ -7,15 +7,9 @@ A single self-contained HTML file that maps all **1,156 tools** from the Tsurugi
 
 ---
 
-## Screenshot
-
-![Tsurugi Scroll — dark mode home view](.github/screenshot.png)
-
----
-
 <h3 align="center">
   <a href="https://ironbranded.github.io/Tsurugi-Scroll/" target="_blank" rel="noopener noreferrer">
-    🟢 RUN THE SCROLL 🟢
+    🟢 UNSHEATHE THE DFIR SWORD 🟢
   </a>
 </h3>
 
