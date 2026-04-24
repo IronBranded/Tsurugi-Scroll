@@ -1,117 +1,687 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Tsurugi Nebula | 3D Tool Map</title>
-    <script src="https://unpkg.com/3d-force-graph"></script>
-    <style>
-        body { margin: 0; background: #0e0c0b; color: #e8e0d0; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
-        #overlay { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; }
-        .hud { background: rgba(14, 12, 11, 0.9); border-left: 4px solid #c0392b; padding: 20px; backdrop-filter: blur(10px); pointer-events: all; border: 1px solid #2e2a24; min-width: 250px; }
-        h1 { margin: 0; font-size: 16px; color: #c0392b; text-transform: uppercase; letter-spacing: 4px; }
-        #status { font-size: 11px; color: #7a6e60; margin: 8px 0; }
-        #detail-box { margin-top: 15px; border-top: 1px solid #2e2a24; pt: 15px; }
-        .t-name { color: #fff; font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px; }
-        .t-desc { color: #a09586; font-size: 12px; line-height: 1.5; }
-        .hint { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #444; font-size: 10px; pointer-events: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Tsurugi Nebula — 3D Tool Map</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0806;color:#e8e0d0;font-family:'JetBrains Mono',monospace;overflow:hidden;width:100vw;height:100vh}
+  #graph-container{width:100vw;height:100vh;position:absolute;top:0;left:0}
+
+  /* HUD Panel */
+  #hud{
+    position:fixed;top:20px;left:20px;z-index:100;
+    background:rgba(10,8,6,.88);
+    border:1px solid #2e2a24;
+    border-left:3px solid #c0392b;
+    padding:18px 20px;
+    min-width:260px;max-width:300px;
+    backdrop-filter:blur(12px);
+    box-shadow:0 8px 40px rgba(0,0,0,.6),0 0 0 1px rgba(192,57,43,.08);
+  }
+  .hud-title{
+    font-size:10px;font-weight:700;letter-spacing:4px;color:rgba(192,57,43,.7);
+    text-transform:uppercase;margin-bottom:4px;
+  }
+  .hud-brand{
+    font-size:18px;font-weight:700;letter-spacing:2px;color:#e8e0d0;margin-bottom:12px;
+    border-bottom:1px solid #2e2a24;padding-bottom:12px;
+  }
+  .hud-brand em{color:#c0392b;font-style:normal}
+  #hud-stats{font-size:10px;color:#7a6e60;line-height:1.9;margin-bottom:12px}
+  #hud-stats span{color:#d4aa70;font-weight:600}
+
+  /* Tool detail card */
+  #detail{
+    border-top:1px solid #2e2a24;padding-top:12px;min-height:80px;
+    transition:opacity .2s;
+  }
+  #detail-icon{font-size:18px;margin-bottom:6px}
+  #detail-name{
+    font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;
+    letter-spacing:.3px;word-break:break-word;
+  }
+  #detail-cat{
+    font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  #detail-desc{font-size:10px;color:#a09586;line-height:1.65;font-family:'Inter',sans-serif}
+  #detail-badge{
+    display:inline-block;margin-top:6px;padding:1px 6px;border-radius:1px;
+    font-size:8px;font-weight:700;letter-spacing:1px;
+    background:rgba(192,57,43,.1);color:#a04030;border:1px solid rgba(192,57,43,.25);
+  }
+
+  /* Controls */
+  #controls{
+    position:fixed;bottom:20px;left:20px;z-index:100;
+    font-size:9px;color:#3d3830;letter-spacing:1.5px;text-transform:uppercase;
+    line-height:2.2;
+  }
+  .ctrl-row{display:flex;gap:8px;align-items:center}
+  .ctrl-key{
+    display:inline-block;padding:1px 6px;border-radius:1px;
+    background:rgba(255,255,255,.05);border:1px solid #2e2a24;
+    color:#5a5048;font-size:8px;
+  }
+
+  /* Legend */
+  #legend{
+    position:fixed;top:20px;right:20px;z-index:100;
+    background:rgba(10,8,6,.88);border:1px solid #2e2a24;
+    padding:14px 16px;max-height:calc(100vh - 40px);overflow-y:auto;
+    backdrop-filter:blur(12px);
+    scrollbar-width:thin;scrollbar-color:#2e2a24 transparent;
+  }
+  #legend::-webkit-scrollbar{width:3px}
+  #legend::-webkit-scrollbar-thumb{background:#2e2a24}
+  .legend-title{font-size:9px;font-weight:700;letter-spacing:2px;color:#5a5048;text-transform:uppercase;margin-bottom:10px}
+  .legend-item{
+    display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer;
+    padding:3px 6px;border-radius:2px;transition:background .15s;
+  }
+  .legend-item:hover{background:rgba(255,255,255,.04)}
+  .legend-item.dimmed{opacity:.3}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .legend-label{font-size:10px;color:#a09586;letter-spacing:.3px}
+  .legend-count{font-size:9px;color:#3d3830;margin-left:auto;font-family:'JetBrains Mono',monospace}
+
+  /* Back link */
+  #back-btn{
+    position:fixed;bottom:20px;right:20px;z-index:100;
+    font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+    padding:8px 16px;border:1px solid rgba(192,57,43,.35);
+    background:rgba(192,57,43,.08);color:rgba(192,57,43,.7);
+    cursor:pointer;text-decoration:none;display:block;
+    transition:background .15s,color .15s;
+  }
+  #back-btn:hover{background:rgba(192,57,43,.16);color:#c0392b}
+
+  /* Search */
+  #search-wrap{
+    position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100;
+    background:rgba(10,8,6,.9);border:1px solid #2e2a24;
+    padding:8px 14px;display:flex;align-items:center;gap:8px;
+    backdrop-filter:blur(12px);
+  }
+  #search-wrap span{color:#5a5048;font-size:12px}
+  #nebula-search{
+    background:none;border:none;color:#e8e0d0;font-size:12px;
+    font-family:'JetBrains Mono',monospace;width:200px;outline:none;
+  }
+  #nebula-search::placeholder{color:#3d3830}
+
+  /* Loading */
+  #loading{
+    position:fixed;inset:0;background:#0a0806;z-index:200;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  }
+  .load-title{font-size:11px;letter-spacing:4px;color:rgba(192,57,43,.6);text-transform:uppercase}
+  .load-bar{width:200px;height:1px;background:#1a1410;overflow:hidden}
+  .load-fill{height:100%;background:linear-gradient(90deg,#c0392b,#e07b39);animation:loadAnim 1.5s ease infinite}
+  @keyframes loadAnim{0%{width:0%;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="overlay">
-        <div class="hud">
-            <h1>Nebula</h1>
-            <div id="status">Syncing with Scroll data...</div>
-            <div id="detail-box">
-                <span class="t-name">System Offline</span>
-                <span class="t-desc">Select a node to begin inspection.</span>
-            </div>
-        </div>
-    </div>
-    <div class="hint">Rotate: Left Click | Pan: Right Click | Zoom: Scroll</div>
-    <div id="3d-graph"></div>
 
-    <script>
-        const graphData = { nodes: [], links: [] };
+<div id="loading">
+  <div class="load-title">Tsurugi Nebula</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+  <div style="font-size:10px;color:#3d3830;letter-spacing:2px">Mapping 1,156 tools…</div>
+</div>
 
-        async function launchNebula() {
-            try {
-                // Fetch your index.html to extract the tool database
-                const response = await fetch('index.html');
-                const text = await response.text();
+<div id="graph-container"></div>
 
-                // Regex to extract the CAT and TOOLS objects from your script
-                const catMatch = text.match(/const CAT\s*=\s*({[\s\S]*?});/);
-                const toolsMatch = text.match(/const TOOLS\s*=\s*(\[[\s\S]*?\]);/);
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-title">Tsurugi Linux · LAB 2024.1</div>
+  <div class="hud-brand">TOOL <em>NEBULA</em></div>
+  <div id="hud-stats">
+    Tools &nbsp;<span id="stat-t">—</span> &nbsp;·&nbsp;
+    Categories &nbsp;<span id="stat-c">—</span><br>
+    Visible &nbsp;<span id="stat-v">—</span>
+  </div>
+  <div id="detail">
+    <div id="detail-icon">🌌</div>
+    <div id="detail-name">Hover a node</div>
+    <div id="detail-cat" style="color:#5a5048">to inspect a tool</div>
+    <div id="detail-desc">Rotate · zoom · click to focus. Use the legend to filter by category.</div>
+  </div>
+</div>
 
-                if (!catMatch || !toolsMatch) throw new Error("Data extraction failed");
+<!-- Search -->
+<div id="search-wrap">
+  <span>⌕</span>
+  <input id="nebula-search" placeholder="Search tools…" autocomplete="off" spellcheck="false">
+</div>
 
-                // Parsing the strings into objects
-                const CAT = eval('(' + catMatch[1] + ')');
-                const TOOLS = eval('(' + toolsMatch[1] + ')');
+<!-- Legend -->
+<div id="legend">
+  <div class="legend-title">Categories</div>
+  <div id="legend-items"></div>
+</div>
 
-                document.getElementById('status').innerText = `Nodes: ${TOOLS.length + Object.keys(CAT).length} | Origin: Tsurugi 2024.1`;
+<!-- Controls -->
+<div id="controls">
+  <div class="ctrl-row"><span class="ctrl-key">Drag</span> Rotate</div>
+  <div class="ctrl-row"><span class="ctrl-key">Scroll</span> Zoom</div>
+  <div class="ctrl-row"><span class="ctrl-key">Right drag</span> Pan</div>
+  <div class="ctrl-row"><span class="ctrl-key">Click</span> Focus node</div>
+</div>
 
-                // 1. Central Core
-                graphData.nodes.push({ id: 'CORE', name: 'TSURUGI', color: '#ffffff', val: 25, type: 'root' });
+<a id="back-btn" href="index.html">← Scroll</a>
 
-                // 2. Category Hubs
-                Object.keys(CAT).forEach(key => {
-                    const c = CAT[key];
-                    graphData.nodes.push({ 
-                        id: key, 
-                        name: `${c.i} ${key}`, 
-                        color: c.c, 
-                        val: 12, 
-                        type: 'hub' 
-                    });
-                    graphData.links.push({ source: 'CORE', target: key, color: '#2e2a24' });
-                });
+<!-- 3D Force Graph from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/3d-force-graph@1.73.0/dist/3d-force-graph.min.js"></script>
 
-                // 3. Individual Tools
-                TOOLS.forEach(t => {
-                    const catColor = CAT[t.c] ? CAT[t.c].c : '#3498db';
-                    graphData.nodes.push({
-                        id: t.n,
-                        name: t.n,
-                        desc: t.p || t.s || 'No description available',
-                        color: catColor,
-                        val: 3,
-                        type: 'tool'
-                    });
-                    graphData.links.push({ source: t.c, target: t.n, color: catColor + '33' });
-                });
+<script>
+/* ── Embedded data (no fetch needed) ─────────────────────────────────── */
+const CAT={
+'Imaging':{i:'💾',c:'#c0392b',d:'Forensic disk acquisition'},
+'Image Formats':{i:'📦',c:'#e07b39',d:'AFF · EWF · RAW image utilities'},
+'Hashing':{i:'#️⃣',c:'#d4aa70',d:'Integrity verification & hash tools'},
+'Fuzzy Hashing':{i:'〰️',c:'#a07850',d:'Similarity-based hashing'},
+'Mounting':{i:'🔗',c:'#8b4513',d:'Filesystem mounting & encryption'},
+'Timeline':{i:'📅',c:'#b8860b',d:'Event reconstruction & super-timelines'},
+'Artifacts':{i:'🔍',c:'#cd853f',d:'Browser · Registry · Email · Filesystem'},
+'Data Recovery':{i:'🔄',c:'#daa520',d:'Deleted file & partition recovery'},
+'Memory':{i:'🧠',c:'#a0522d',d:'RAM acquisition & volatile analysis'},
+'Malware':{i:'☠️',c:'#8b1a1a',d:'Binary · PE · Office · PDF malware analysis'},
+'Passwords':{i:'🔑',c:'#c87941',d:'Hash cracking & brute-force utilities'},
+'Network':{i:'🌐',c:'#7a8c6e',d:'PCAP · Zeek · Wireless · Log analysis'},
+'Office & Docs':{i:'📄',c:'#8a7a6a',d:'Office document forensics & CSV tools'},
+'Multimedia':{i:'🎬',c:'#b8960c',d:'Graphics · Audio · Video tools'},
+'Reporting':{i:'📋',c:'#96a060',d:'Case documentation & evidence reporting'},
+'Steganography':{i:'🖼️',c:'#7a6a8a',d:'Image analysis · Stego detection'},
+'OSINT':{i:'🕵️',c:'#806878',d:'Email · Social · Web · Dark web intel'},
+'AI & Vision':{i:'🤖',c:'#907880',d:'Face recognition · OCR · Object detection'},
+'Mobile':{i:'📱',c:'#6a8090',d:'Android · iOS · WhatsApp · Telegram'},
+'Cloud':{i:'☁️',c:'#608070',d:'AWS · GCP · Azure cloud forensics'},
+'Virtual & Crypto':{i:'🖥️',c:'#a09050',d:'VM · Container · Blockchain forensics'},
+'NFC':{i:'📡',c:'#608898',d:'NFC card & MIFARE analysis'},
+'Secure Delete':{i:'🗑️',c:'#905050',d:'Wiping & secure removal tools'},
+'Diff Tools':{i:'🔀',c:'#8a7050',d:'File & binary comparison tools'},
+'Tunnels & Remote':{i:'🔒',c:'#607080',d:'VPN · Proxy · RDP · SSH tunneling'},
+'System Tools':{i:'⚙️',c:'#787060',d:'Admin · Terminals · System diagnostics'}
+};
 
-                const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
-                    .graphData(graphData)
-                    .backgroundColor('#0e0c0b')
-                    .nodeLabel('name')
-                    .nodeColor(node => node.color)
-                    .nodeVal(node => node.val)
-                    .linkWidth(0.5)
-                    .linkOpacity(0.3)
-                    .onNodeHover(node => {
-                        if (node && node.type === 'tool') {
-                            document.querySelector('.t-name').innerText = node.name;
-                            document.querySelector('.t-desc').innerText = node.desc;
-                        }
-                    })
-                    .onNodeClick(node => {
-                        const distance = 120;
-                        const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
-                        Graph.cameraPosition(
-                            { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
-                            node, 
-                            2500
-                        );
-                    });
+// Tool list — name, type, purpose, category
+const TOOLS=[
+{n:'Cyclone',t:'CLI',p:'Forensic disk imaging',c:'Imaging',oss:true},
+{n:'dc3dd',t:'CLI',p:'Enhanced dd for DFIR with hashing and logging',c:'Imaging',oss:true},
+{n:'dcfldd',t:'CLI',p:'Disk imaging with hashing support',c:'Imaging',oss:true},
+{n:'dd',t:'CLI',p:'Standard disk cloning and imaging',c:'Imaging',oss:true},
+{n:'dd_rescue',t:'CLI',p:'Recovery-focused disk imaging',c:'Imaging',oss:true},
+{n:'ddrescue',t:'CLI',p:'Intelligent data recovery imaging',c:'Imaging',oss:true},
+{n:'DDRescue-GUI',t:'GUI',p:'Frontend for ddrescue operations',c:'Imaging',oss:true},
+{n:'ewfacquire',t:'CLI',p:'EWF (EnCase) image acquisition',c:'Imaging',oss:true},
+{n:'ewfacquirestream',t:'CLI',p:'Streaming EWF image acquisition',c:'Imaging',oss:true},
+{n:'ftkimager',t:'GUI',p:'Disk imaging, file preview, and acquisition',c:'Imaging',oss:false},
+{n:'guymager',t:'GUI',p:'Forensic disk imaging with verification',c:'Imaging',oss:true},
+{n:'affcat',t:'CLI',p:'Concatenate AFF images',c:'Image Formats',oss:true},
+{n:'affcompare',t:'CLI',p:'Compare AFF images',c:'Image Formats',oss:true},
+{n:'affconvert',t:'CLI',p:'Convert disk images to AFF',c:'Image Formats',oss:true},
+{n:'affcopy',t:'CLI',p:'Copy AFF images',c:'Image Formats',oss:true},
+{n:'affcrypto',t:'CLI',p:'Encrypt/decrypt AFF images',c:'Image Formats',oss:true},
+{n:'affdiskprint',t:'CLI',p:'Disk structure overview',c:'Image Formats',oss:true},
+{n:'affinfo',t:'CLI',p:'Display AFF metadata',c:'Image Formats',oss:true},
+{n:'affix',t:'CLI',p:'AFF image indexing',c:'Image Formats',oss:true},
+{n:'affrecover',t:'CLI',p:'Recover files from AFF',c:'Image Formats',oss:true},
+{n:'affsegment',t:'CLI',p:'Segment AFF images',c:'Image Formats',oss:true},
+{n:'affsign',t:'CLI',p:'Sign AFF images',c:'Image Formats',oss:true},
+{n:'affstats',t:'CLI',p:'AFF image statistics',c:'Image Formats',oss:true},
+{n:'affverify',t:'CLI',p:'Verify AFF integrity',c:'Image Formats',oss:true},
+{n:'affxml',t:'CLI',p:'Export metadata to XML',c:'Image Formats',oss:true},
+{n:'ewfdebug',t:'CLI',p:'Debug EWF images',c:'Image Formats',oss:true},
+{n:'ewfexport',t:'CLI',p:'Export EWF images',c:'Image Formats',oss:true},
+{n:'ewfinfo',t:'CLI',p:'Display EWF metadata',c:'Image Formats',oss:true},
+{n:'ewfrecover',t:'CLI',p:'Recover files from EWF',c:'Image Formats',oss:true},
+{n:'ewfverify',t:'CLI',p:'Verify EWF integrity',c:'Image Formats',oss:true},
+{n:'ddrescuelog',t:'CLI',p:'View ddrescue logs',c:'Image Formats',oss:true},
+{n:'ddrescueview',t:'GUI',p:'Visualize ddrescue progress',c:'Image Formats',oss:true},
+{n:'ccd2iso',t:'CLI',p:'Convert CloneCD to ISO',c:'Image Formats',oss:true},
+{n:'dmde',t:'GUI',p:'Disk editing and recovery',c:'Image Formats',oss:true},
+{n:'GtkHash',t:'GUI',p:'Compute and verify hashes',c:'Hashing',oss:true},
+{n:'Hash Buster',t:'GUI',p:'Hash lookup and cracking',c:'Hashing',oss:true},
+{n:'hashid',t:'CLI',p:'Identify hash types',c:'Hashing',oss:true},
+{n:'md5sum',t:'CLI',p:'Compute MD5 hash',c:'Hashing',oss:true},
+{n:'pehash',t:'CLI',p:'Compute PE file hashes',c:'Hashing',oss:true},
+{n:'QuickHash',t:'GUI',p:'File and disk hashing',c:'Hashing',oss:true},
+{n:'rahash2',t:'CLI',p:'Hashing from radare2 suite',c:'Hashing',oss:true},
+{n:'sha1sum / sha256sum / sha512sum',t:'CLI',p:'Compute SHA hashes',c:'Hashing',oss:true},
+{n:'simhash',t:'CLI',p:'Compute similarity hashes',c:'Hashing',oss:true},
+{n:'hashdeep / md5deep',t:'CLI',p:'Recursive hashing',c:'Fuzzy Hashing',oss:true},
+{n:'ssdeep',t:'CLI',p:'Fuzzy hashing',c:'Fuzzy Hashing',oss:true},
+{n:'tigerdeep',t:'CLI',p:'Tiger hash algorithm',c:'Fuzzy Hashing',oss:true},
+{n:'whirpooldeep',t:'CLI',p:'Recursive Whirlpool hashing',c:'Fuzzy Hashing',oss:true},
+{n:'cryptmount',t:'CLI',p:'Mount encrypted file systems',c:'Mounting',oss:true},
+{n:'disktype',t:'CLI',p:'Identify partition and filesystem type',c:'Mounting',oss:true},
+{n:'fdisk',t:'CLI',p:'Partition table analysis tool',c:'Mounting',oss:true},
+{n:'mmls',t:'CLI',p:'Display partition layout within images',c:'Mounting',oss:true},
+{n:'affuse',t:'CLI',p:'Mount AFF images via FUSE',c:'Mounting',oss:true},
+{n:'apfs-fuse',t:'CLI',p:'Mount APFS volumes (read-only)',c:'Mounting',oss:true},
+{n:'ewfmount',t:'CLI',p:'Mount E01 evidence images',c:'Mounting',oss:true},
+{n:'xmount',t:'CLI',p:'Convert and mount multiple image formats',c:'Mounting',oss:true},
+{n:'VeraCrypt GUI',t:'GUI',p:'Graphical tool for encrypted volumes',c:'Mounting',oss:true},
+{n:'dislocker',t:'CLI',p:'Decrypt BitLocker volumes',c:'Mounting',oss:true},
+{n:'bdemount',t:'CLI',p:'Mount BitLocker-encrypted volumes',c:'Mounting',oss:true},
+{n:'vmdkmount',t:'CLI',p:'Mount VMware VMDK disk images',c:'Mounting',oss:true},
+{n:'s3fs',t:'CLI',p:'Mount Amazon S3 buckets as filesystems',c:'Mounting',oss:true},
+{n:'vshadowmount',t:'CLI',p:'Mount shadow copy as volume',c:'Mounting',oss:true},
+{n:'log2timeline',t:'CLI',p:'Super-timeline generator',c:'Timeline',oss:true},
+{n:'psort',t:'CLI',p:'Sort and filter events in a Plaso database',c:'Timeline',oss:true},
+{n:'psteal',t:'CLI',p:'Automates collection, parsing, and sorting',c:'Timeline',oss:true},
+{n:'pinfo',t:'CLI',p:'Display metadata from a Plaso storage file',c:'Timeline',oss:true},
+{n:'Timesketch Launcher',t:'Web/GUI',p:'Launches Timesketch web interface',c:'Timeline',oss:true},
+{n:'glogg',t:'GUI',p:'Log file explorer for large files',c:'Timeline',oss:true},
+{n:'mactime',t:'CLI',p:'Generate a file timeline from a Sleuth Kit bodyfile',c:'Timeline',oss:true},
+{n:'Velociraptor',t:'CLI/Web',p:'Collect and analyze forensic artifacts remotely',c:'Timeline',oss:true},
+{n:'Autopsy',t:'GUI',p:'Full forensic platform using TSK backend',c:'Timeline',oss:true},
+{n:'fls',t:'CLI',p:'List file and directory entries',c:'Timeline',oss:true},
+{n:'fsstat',t:'CLI',p:'Display filesystem statistics',c:'Timeline',oss:true},
+{n:'blkcat',t:'CLI',p:'Extract content from specific blocks',c:'Timeline',oss:true},
+{n:'icat',t:'CLI',p:'Extract file contents by inode',c:'Timeline',oss:true},
+{n:'tsk_recover',t:'CLI',p:'Recover files from disk images',c:'Timeline',oss:true},
+{n:'usnjls',t:'CLI',p:'Parse USN Journal entries',c:'Timeline',oss:true},
+{n:'automactc',t:'CLI',p:'Parse auto-start items on macOS',c:'Artifacts',oss:true},
+{n:'plistutil',t:'CLI',p:'Parse/edit plist files',c:'Artifacts',oss:true},
+{n:'galleta',t:'CLI',p:'Extract browser cookies',c:'Artifacts',oss:true},
+{n:'hindsight',t:'CLI',p:'Parse Chromium browser artifacts',c:'Artifacts',oss:true},
+{n:'readpst',t:'CLI',p:'Read and extract PST contents',c:'Artifacts',oss:true},
+{n:'emlAnalyzer',t:'CLI',p:'Parse .eml files',c:'Artifacts',oss:true},
+{n:'AnalyzeMFT',t:'CLI',p:'Parse the NTFS Master File Table (MFT)',c:'Artifacts',oss:true},
+{n:'parse_MFT',t:'CLI',p:'Extract data from MFT',c:'Artifacts',oss:true},
+{n:'scrounge-ntfs',t:'CLI',p:'Recover deleted NTFS files',c:'Artifacts',oss:true},
+{n:'usncarve',t:'CLI',p:'Carve files using NTFS USN Journal',c:'Artifacts',oss:true},
+{n:'RegRipper',t:'CLI',p:'Registry artifact extraction framework',c:'Artifacts',oss:true},
+{n:'reglookup',t:'CLI',p:'Parse Windows registry hives',c:'Artifacts',oss:true},
+{n:'reglookup-recover',t:'CLI',p:'Recover deleted registry keys',c:'Artifacts',oss:true},
+{n:'Fred',t:'GUI',p:'Registry hive explorer for forensic analysis',c:'Artifacts',oss:true},
+{n:'bulk_extractor',t:'CLI',p:'Extracts features from disk images',c:'Artifacts',oss:true},
+{n:'exiftool',t:'CLI',p:'Extract and modify file metadata',c:'Artifacts',oss:true},
+{n:'chainsaw',t:'CLI',p:'Fast hunt and detection tool for Windows event logs',c:'Artifacts',oss:true},
+{n:'evtxexport',t:'CLI',p:'Convert EVTX files to structured formats',c:'Artifacts',oss:true},
+{n:'zircolite',t:'CLI',p:'Lightweight EVTX threat detection engine',c:'Artifacts',oss:true},
+{n:'rifiuti2',t:'CLI',p:'Analyze Recycle Bin records',c:'Artifacts',oss:true},
+{n:'lnkinfo',t:'CLI',p:'Analyze Windows shortcut files',c:'Artifacts',oss:true},
+{n:'prefetch.py',t:'CLI',p:'Parse and analyze Windows Prefetch files',c:'Artifacts',oss:true},
+{n:'zfs',t:'CLI',p:'Manage ZFS datasets and snapshots',c:'Artifacts',oss:true},
+{n:'afro',t:'CLI',p:'Recover deleted or corrupted files',c:'Data Recovery',oss:true},
+{n:'ext3grep',t:'CLI',p:'Recover deleted files from ext3 filesystems',c:'Data Recovery',oss:true},
+{n:'ext4magic',t:'CLI',p:'Recover deleted files from ext4 filesystems',c:'Data Recovery',oss:true},
+{n:'extundelete',t:'CLI',p:'Undelete files from ext3/ext4 filesystems',c:'Data Recovery',oss:true},
+{n:'foremost',t:'CLI',p:'File carving tool based on headers and footers',c:'Data Recovery',oss:true},
+{n:'photorec',t:'CLI',p:'Recover lost files from disks and images',c:'Data Recovery',oss:true},
+{n:'RecuperaBit',t:'CLI',p:'Reconstruct files from NTFS raw disk images',c:'Data Recovery',oss:true},
+{n:'scalpel',t:'CLI',p:'Fast file carver for multiple formats',c:'Data Recovery',oss:true},
+{n:'testdisk',t:'CLI',p:'Partition repair and recovery tool',c:'Data Recovery',oss:true},
+{n:'safecopy',t:'CLI',p:'Recover data from damaged storage',c:'Data Recovery',oss:true},
+{n:'myrescue',t:'CLI',p:'Data recovery tool for damaged block devices',c:'Data Recovery',oss:true},
+{n:'recoverdm',t:'CLI',p:'Recover data from optical discs',c:'Data Recovery',oss:true},
+{n:'aeskeyfind',t:'CLI',p:'Scan memory dumps for AES key schedules',c:'Memory',oss:true},
+{n:'avml',t:'CLI',p:'Acquire volatile memory from Windows systems',c:'Memory',oss:true},
+{n:'avml-convert',t:'CLI',p:'Convert AVML output into other memory image formats',c:'Memory',oss:true},
+{n:'pypykatz',t:'CLI',p:'Extract credentials from memory or registry hives',c:'Memory',oss:true},
+{n:'rsakeyfind',t:'CLI',p:'Search memory images for RSA private keys',c:'Memory',oss:true},
+{n:'Volatility3',t:'CLI',p:'Framework for extracting artifacts from memory images',c:'Memory',oss:true},
+{n:'volshell',t:'CLI',p:'Interactive memory analysis shell for Volatility',c:'Memory',oss:true},
+{n:'WinSuperMem',t:'CLI',p:'Advanced Windows memory acquisition and analysis',c:'Memory',oss:false},
+{n:'yarp-memcarver',t:'CLI',p:'Carve structured artifacts from memory images',c:'Memory',oss:true},
+{n:'pehash',t:'CLI',p:'Compute structural hashes of PE files',c:'Malware',oss:true},
+{n:'pepack',t:'CLI',p:'Detect/handle packed PE binaries',c:'Malware',oss:true},
+{n:'peres',t:'CLI',p:'Extract resources from PE files',c:'Malware',oss:true},
+{n:'pescan',t:'CLI',p:'Scan PE for suspicious patterns',c:'Malware',oss:true},
+{n:'readpe',t:'CLI',p:'Read and parse PE header/structures',c:'Malware',oss:true},
+{n:'cutter',t:'GUI',p:'Radare2 frontend for interactive reverse engineering',c:'Malware',oss:true},
+{n:'radare2',t:'CLI',p:'Full reverse-engineering framework',c:'Malware',oss:true},
+{n:'radiff2',t:'CLI',p:'Binary diffing with radare2',c:'Malware',oss:true},
+{n:'rabin2',t:'CLI',p:'Extract binary metadata with radare2',c:'Malware',oss:true},
+{n:'binwalk',t:'CLI',p:'Analyze and extract embedded files/firmware',c:'Malware',oss:true},
+{n:'objdump',t:'CLI',p:'Disassemble and show object file info',c:'Malware',oss:true},
+{n:'strace',t:'CLI',p:'Trace syscalls from a running process',c:'Malware',oss:true},
+{n:'gdb',t:'CLI',p:'GNU debugger for native binaries',c:'Malware',oss:true},
+{n:'CyberChef',t:'Web/GUI',p:'Universal data transformation and deobfuscation',c:'Malware',oss:true},
+{n:'olevba',t:'CLI',p:'Extract and analyze VBA macros',c:'Malware',oss:true},
+{n:'oledump',t:'CLI',p:'Dump OLE streams and extract macros',c:'Malware',oss:true},
+{n:'oleid',t:'CLI',p:'Identify suspicious OLE characteristics',c:'Malware',oss:true},
+{n:'mraptor',t:'CLI',p:'Macro analysis and detection',c:'Malware',oss:true},
+{n:'rtfdump',t:'CLI',p:'Inspect RTF structures, extract embedded objects',c:'Malware',oss:true},
+{n:'peepdf',t:'CLI',p:'Python-based PDF analysis',c:'Malware',oss:true},
+{n:'pdfid',t:'CLI',p:'Scan PDFs for suspicious elements',c:'Malware',oss:true},
+{n:'yara',t:'CLI',p:'Pattern-based signature matching engine',c:'Malware',oss:true},
+{n:'clamav',t:'CLI',p:'Signature-based malware scanner',c:'Malware',oss:true},
+{n:'rkhunter',t:'CLI',p:'Rootkit Hunter for Linux',c:'Malware',oss:true},
+{n:'xortool',t:'CLI',p:'Analyze and break XOR/shift/encoding schemes',c:'Malware',oss:true},
+{n:'Ghidra',t:'GUI',p:'NSA reverse-engineering framework',c:'Malware',oss:true},
+{n:'hashcat',t:'CLI',p:'High-performance GPU/CPU hash cracking',c:'Passwords',oss:true},
+{n:'John the Ripper',t:'CLI',p:'CPU-based password cracker',c:'Passwords',oss:true},
+{n:'ophcrack',t:'GUI',p:'Rainbow-table based Windows password recovery',c:'Passwords',oss:true},
+{n:'fcrackzip',t:'CLI',p:'Crack password-protected ZIP archives',c:'Passwords',oss:true},
+{n:'pdfcrack',t:'CLI',p:'Crack password-protected PDFs',c:'Passwords',oss:true},
+{n:'samdump2',t:'CLI',p:'Dump Windows SAM hashes for offline cracking',c:'Passwords',oss:true},
+{n:'bruteforce-luks',t:'CLI',p:'Brute force for LUKS volumes',c:'Passwords',oss:true},
+{n:'hydra',t:'CLI',p:'Multi-protocol online password cracker',c:'Passwords',oss:true},
+{n:'medusa',t:'CLI',p:'Parallel modular login brute-forcer',c:'Passwords',oss:true},
+{n:'ncrack',t:'CLI',p:'High-speed network authentication cracking',c:'Passwords',oss:true},
+{n:'crunch',t:'CLI',p:'Generate custom wordlists by pattern/charset',c:'Passwords',oss:true},
+{n:'cupp',t:'CLI',p:'Create custom wordlists from target data',c:'Passwords',oss:true},
+{n:'amass',t:'CLI',p:'DNS/AS discovery & attack surface mapping',c:'Network',oss:true},
+{n:'nmap',t:'CLI',p:'Port/service discovery, OS detection, scripts',c:'Network',oss:true},
+{n:'masscan',t:'CLI',p:'Extremely fast port scanner',c:'Network',oss:true},
+{n:'tcpdump',t:'CLI',p:'Packet capture and filtering',c:'Network',oss:true},
+{n:'Wireshark',t:'GUI',p:'Packet capture and deep protocol analysis',c:'Network',oss:true},
+{n:'tshark',t:'CLI',p:'Command-line Wireshark with protocol decoding',c:'Network',oss:true},
+{n:'zeek',t:'CLI',p:'Network security monitor / protocol analysis engine',c:'Network',oss:true},
+{n:'suricata',t:'CLI',p:'IDS/IPS & network security monitoring',c:'Network',oss:true},
+{n:'NetworkMiner',t:'GUI',p:'Passive network sniffer and artifact extractor',c:'Network',oss:true},
+{n:'Brim',t:'GUI',p:'PCAP exploration UI with schema/search',c:'Network',oss:true},
+{n:'tcpflow',t:'CLI',p:'Reconstruct TCP streams into files',c:'Network',oss:true},
+{n:'scapy',t:'CLI',p:'Packet crafting, parsing and replay framework',c:'Network',oss:true},
+{n:'ngrep',t:'CLI',p:'Packet content grep for text/regex',c:'Network',oss:true},
+{n:'dnsrecon',t:'CLI',p:'DNS reconnaissance and zone transfer checks',c:'Network',oss:true},
+{n:'aircrack-ng',t:'CLI',p:'WPA/WPA2 handshake cracking and analysis',c:'Network',oss:true},
+{n:'airodump-ng',t:'CLI',p:'Capture raw Wi-Fi traffic & handshakes',c:'Network',oss:true},
+{n:'Kibana',t:'Web',p:'Visualization & dashboards for Elasticsearch',c:'Network',oss:true},
+{n:'lnav',t:'CLI',p:'Log file navigator with SQL-like queries',c:'Network',oss:true},
+{n:'ja3',t:'CLI',p:'TLS client fingerprinting extractor',c:'Network',oss:true},
+{n:'urlsnarf',t:'CLI',p:'Capture and print URLs from network traffic',c:'Network',oss:true},
+{n:'catdoc',t:'CLI',p:'Extract text from Microsoft Word binary files',c:'Office & Docs',oss:true},
+{n:'docx2txt',t:'CLI',p:'Convert DOCX files to plain text',c:'Office & Docs',oss:true},
+{n:'olemeta',t:'CLI',p:'Extract metadata from Microsoft OLE documents',c:'Office & Docs',oss:true},
+{n:'LibreOffice',t:'GUI',p:'Full office suite',c:'Office & Docs',oss:true},
+{n:'csvkit',t:'CLI',p:'CSV processing tools suite',c:'Office & Docs',oss:true},
+{n:'unoconv',t:'CLI',p:'Convert between many office formats',c:'Office & Docs',oss:true},
+{n:'Darktable',t:'GUI',p:'Raw photo editor and manager',c:'Multimedia',oss:true},
+{n:'ImageMagick',t:'CLI',p:'Image manipulation and conversion',c:'Multimedia',oss:true},
+{n:'ffmpeg',t:'CLI',p:'Extract metadata, transcode, or split video/audio',c:'Multimedia',oss:true},
+{n:'Audacity',t:'GUI',p:'Audio editor and analyzer',c:'Multimedia',oss:true},
+{n:'VLC media player',t:'GUI',p:'Universal media player',c:'Multimedia',oss:true},
+{n:'exiv2',t:'CLI',p:'Read/write image metadata',c:'Multimedia',oss:true},
+{n:'Aurora',t:'GUI',p:'Case / incident tracking and report generation',c:'Reporting',oss:true},
+{n:'CherryTree',t:'GUI',p:'Hierarchical note-taking with rich text',c:'Reporting',oss:true},
+{n:'Kazam',t:'GUI',p:'Screen recorder and screenshot capture',c:'Reporting',oss:true},
+{n:'Shutter',t:'GUI',p:'Advanced screenshot tool with annotation',c:'Reporting',oss:true},
+{n:'wkhtmltopdf',t:'CLI',p:'Render HTML/web pages to PDF',c:'Reporting',oss:true},
+{n:'Zim Desktop Wiki',t:'GUI',p:'Local wiki for note organization',c:'Reporting',oss:true},
+{n:'Sherloq',t:'CLI',p:'Image triage and metadata extraction',c:'Steganography',oss:true},
+{n:'exiftool',t:'CLI',p:'Comprehensive metadata extraction',c:'Steganography',oss:true},
+{n:'steghide',t:'CLI',p:'Hide/extract data in images/audio',c:'Steganography',oss:true},
+{n:'stegoveritas',t:'CLI',p:'Automated steganography analysis framework',c:'Steganography',oss:true},
+{n:'outguess',t:'CLI',p:'Classic steganography tool',c:'Steganography',oss:true},
+{n:'pngcheck',t:'CLI',p:'Verify and report PNG file integrity',c:'Steganography',oss:true},
+{n:'mat2',t:'GUI/CLI',p:'Metadata Anonymisation Toolkit',c:'Steganography',oss:true},
+{n:'findimagedupes',t:'CLI',p:'Find duplicate and near-duplicate images',c:'Steganography',oss:true},
+{n:'vinetto',t:'CLI',p:'Windows thumbnail forensic tool',c:'Steganography',oss:true},
+{n:'OSINT Switcher',t:'GUI',p:'Switch between multiple OSINT profiles',c:'OSINT',oss:true},
+{n:'Maltego',t:'GUI',p:'Graph-based intelligence analysis',c:'OSINT',oss:true},
+{n:'spiderfoot',t:'CLI',p:'Automated OSINT reconnaissance',c:'OSINT',oss:true},
+{n:'Sherlock',t:'CLI',p:'Username search across platforms',c:'OSINT',oss:true},
+{n:'Maigret',t:'CLI',p:'Social media footprinting',c:'OSINT',oss:true},
+{n:'theHarvester',t:'CLI',p:'Email and host enumeration',c:'OSINT',oss:true},
+{n:'shodan',t:'CLI',p:'IoT and host reconnaissance',c:'OSINT',oss:true},
+{n:'recon-ng',t:'CLI',p:'Web reconnaissance framework',c:'OSINT',oss:true},
+{n:'metagoofil',t:'CLI',p:'Extract documents and metadata from public sources',c:'OSINT',oss:true},
+{n:'holehe',t:'CLI',p:'Detect social media accounts associated with emails',c:'OSINT',oss:true},
+{n:'PhoneInfoga',t:'CLI',p:'Phone number intelligence',c:'OSINT',oss:true},
+{n:'GHunt',t:'CLI',p:'Google account OSINT enumeration',c:'OSINT',oss:true},
+{n:'darkdump',t:'CLI',p:'Extract data from Tor hidden services',c:'OSINT',oss:true},
+{n:'wayback_machine_downloader',t:'CLI',p:'Archive retrieval',c:'OSINT',oss:true},
+{n:'tesseract',t:'CLI',p:'Primary OCR engine for text extraction',c:'AI & Vision',oss:true},
+{n:'alpr',t:'CLI',p:'Automatic License Plate Recognition',c:'AI & Vision',oss:true},
+{n:'Face Recognition',t:'CLI',p:'Match a recovered image against a watchlist',c:'AI & Vision',oss:true},
+{n:'Facerec Web GUI',t:'Web/GUI',p:'Upload suspect images and inspect match scores',c:'AI & Vision',oss:true},
+{n:'Object detection video',t:'CLI',p:'Batch object detection on video files',c:'AI & Vision',oss:true},
+{n:'gocr',t:'CLI',p:'Open-source OCR engine',c:'AI & Vision',oss:true},
+{n:'whapa-gui',t:'GUI',p:'WhatsApp forensic GUI extraction tool',c:'Mobile',oss:true},
+{n:'whachat',t:'CLI',p:'Extract and parse WhatsApp messages',c:'Mobile',oss:true},
+{n:'whacipher',t:'CLI',p:'Decrypt WhatsApp databases',c:'Mobile',oss:true},
+{n:'adb',t:'CLI',p:'Android Debug Bridge for file access',c:'Mobile',oss:true},
+{n:'android_triage',t:'CLI',p:'Collect high-value Android artifacts',c:'Mobile',oss:true},
+{n:'Andriller GUI',t:'GUI',p:'Android forensic extraction GUI',c:'Mobile',oss:true},
+{n:'Androwarn',t:'CLI',p:'Android app static analysis',c:'Mobile',oss:true},
+{n:'apktool',t:'CLI',p:'Decompile/rebuild APKs',c:'Mobile',oss:true},
+{n:'mvt-android',t:'CLI',p:'Mobile Verification Toolkit for Android',c:'Mobile',oss:true},
+{n:'scrcpy',t:'CLI',p:'Mirror and control Android device',c:'Mobile',oss:true},
+{n:'apollo',t:'CLI',p:'iOS forensic acquisition',c:'Mobile',oss:true},
+{n:'iLEAPP',t:'CLI',p:'iOS artifact extraction and reporting',c:'Mobile',oss:true},
+{n:'mvt-ios',t:'CLI',p:'Mobile Verification Toolkit for iOS',c:'Mobile',oss:true},
+{n:'DB Browser for SQLite',t:'GUI',p:'Browse, query, and export SQLite databases',c:'Mobile',oss:true},
+{n:'telegram-export',t:'CLI',p:'Export Telegram messages',c:'Mobile',oss:true},
+{n:'aws CLI',t:'CLI',p:'Official AWS command-line interface',c:'Cloud',oss:true},
+{n:'aws_ir',t:'CLI',p:'AWS incident response toolkit',c:'Cloud',oss:true},
+{n:'cloudforensics',t:'CLI',p:'General cloud forensic collection toolkit',c:'Cloud',oss:true},
+{n:'ScoutSuite',t:'CLI',p:'Multi-cloud security auditing tool',c:'Cloud',oss:true},
+{n:'sshfs',t:'CLI',p:'Mount remote filesystem over SSH',c:'Cloud',oss:true},
+{n:'margaritashotgun',t:'CLI',p:'Mass acquisition tool for cloud systems',c:'Cloud',oss:true},
+{n:'qemu-img',t:'CLI',p:'Convert, resize and inspect virtual disk images',c:'Virtual & Crypto',oss:true},
+{n:'docker-explorer',t:'CLI',p:'Inspect Docker images/containers offline',c:'Virtual & Crypto',oss:true},
+{n:'BTCrecover',t:'CLI',p:'Wallet password recovery',c:'Virtual & Crypto',oss:true},
+{n:'Electrum',t:'GUI',p:'Lightweight wallet client',c:'Virtual & Crypto',oss:true},
+{n:'pywallet',t:'CLI',p:'Recover keys from Bitcoin wallet.dat files',c:'Virtual & Crypto',oss:true},
+{n:'keyhunter',t:'CLI',p:'Search and recover cryptographic keys',c:'Virtual & Crypto',oss:true},
+{n:'Cardpeek',t:'GUI',p:'Read and inspect smartcard/NFC card contents',c:'NFC',oss:true},
+{n:'mfoc',t:'CLI',p:'Mifare Classic offline brute-force/restore',c:'NFC',oss:true},
+{n:'mfcuk',t:'CLI',p:'Mifare Classic cracking toolkit',c:'NFC',oss:true},
+{n:'nfc-list',t:'CLI',p:'List NFC devices and tags',c:'NFC',oss:true},
+{n:'shred',t:'CLI',p:'Overwrite file contents securely',c:'Secure Delete',oss:true},
+{n:'wipe',t:'CLI',p:'Securely erase files/partitions',c:'Secure Delete',oss:true},
+{n:'sdmem',t:'CLI',p:'Securely wipe memory-backed files',c:'Secure Delete',oss:true},
+{n:'sfill',t:'CLI',p:'Securely wipe free space on mounted filesystems',c:'Secure Delete',oss:true},
+{n:'srm',t:'CLI',p:'Secure remove',c:'Secure Delete',oss:true},
+{n:'cmp',t:'CLI',p:'Compare two files byte by byte',c:'Diff Tools',oss:true},
+{n:'diff',t:'CLI',p:'Standard Unix file comparison',c:'Diff Tools',oss:true},
+{n:'Meld',t:'GUI',p:'Visual diff/merge tool',c:'Diff Tools',oss:true},
+{n:'hexdiff',t:'CLI',p:'Compare files in hexadecimal',c:'Diff Tools',oss:true},
+{n:'vbindiff',t:'CLI',p:'Hex + ASCII file diff viewer',c:'Diff Tools',oss:true},
+{n:'dupeguru',t:'GUI',p:'Find duplicate files across directories',c:'Diff Tools',oss:true},
+{n:'chisel',t:'CLI',p:'Fast TCP/UDP tunnel over HTTP',c:'Tunnels & Remote',oss:true},
+{n:'openvpn',t:'CLI',p:'Full-featured VPN client/server',c:'Tunnels & Remote',oss:true},
+{n:'proxychains',t:'CLI',p:'Force applications through SOCKS/HTTP proxies',c:'Tunnels & Remote',oss:true},
+{n:'Remmina',t:'GUI',p:'Remote desktop client (RDP, VNC, SSH)',c:'Tunnels & Remote',oss:true},
+{n:'sshuttle',t:'CLI',p:'Transparent proxy / VPN over SSH',c:'Tunnels & Remote',oss:true},
+{n:'xfreerdp',t:'CLI',p:'FreeRDP client for RDP connections',c:'Tunnels & Remote',oss:true},
+{n:'usbrip',t:'CLI',p:'Extract and parse USB device artifacts',c:'System Tools',oss:true},
+{n:'ciphey',t:'CLI',p:'Automated ciphertext detection & decryption',c:'System Tools',oss:true},
+{n:'RsaCtfTool',t:'CLI',p:'Recover RSA private keys',c:'System Tools',oss:true},
+{n:'Htop',t:'CLI',p:'Interactive process and resource monitor',c:'System Tools',oss:true},
+{n:'GParted',t:'GUI',p:'Partition editor and disk utility',c:'System Tools',oss:true},
+{n:'Tor Browser',t:'GUI',p:'Anonymized web browsing through Tor network',c:'System Tools',oss:true},
+{n:'Firefox Web Browser',t:'GUI',p:'Standard browser for general web access',c:'System Tools',oss:true},
+{n:'fish',t:'CLI',p:'User-friendly shell with autocompletion',c:'System Tools',oss:true},
+{n:'ncdu',t:'CLI',p:'Disk usage analyzer',c:'System Tools',oss:true},
+{n:'BleachBit',t:'GUI',p:'Secure cleaner for caches, logs, temporary files',c:'System Tools',oss:true},
+];
 
-            } catch (err) {
-                console.error(err);
-                document.getElementById('status').innerText = "Critical: Data link broken.";
-            }
-        }
+/* ── Build graph data ─────────────────────────────────────────────────── */
+const catKeys = Object.keys(CAT);
+let hiddenCats = new Set();
+let searchQuery = '';
 
-        launchNebula();
-    </script>
+function buildGraphData() {
+  const nodes = [];
+  const links = [];
+
+  // Core node
+  nodes.push({ id: '__CORE__', name: 'TSURUGI', group: '__core__', val: 30, color: '#ffffff', type: 'core' });
+
+  // Category hubs
+  catKeys.forEach(key => {
+    const m = CAT[key];
+    const count = TOOLS.filter(t => t.c === key).length;
+    nodes.push({
+      id: '__CAT__' + key,
+      name: key,
+      desc: m.d,
+      icon: m.i,
+      group: key,
+      val: 14,
+      color: m.c,
+      type: 'cat',
+      count
+    });
+    links.push({ source: '__CORE__', target: '__CAT__' + key, color: m.c + '22', width: 1.5 });
+  });
+
+  // Tools
+  const ql = searchQuery.toLowerCase().trim();
+  TOOLS.forEach((t, idx) => {
+    const m = CAT[t.c];
+    const color = m ? m.c : '#888';
+    const hidden = hiddenCats.has(t.c);
+    const searchHide = ql && !t.n.toLowerCase().includes(ql) && !t.p.toLowerCase().includes(ql) && !t.c.toLowerCase().includes(ql);
+    nodes.push({
+      id: t.n + '__' + idx,
+      name: t.n,
+      desc: t.p,
+      icon: m ? m.i : '🔧',
+      group: t.c,
+      val: 3,
+      color: (hidden || searchHide) ? '#1a1410' : color,
+      type: 'tool',
+      oss: t.oss,
+      toolType: t.t,
+      hidden: hidden || searchHide,
+      toolRef: t
+    });
+    links.push({
+      source: '__CAT__' + t.c,
+      target: t.n + '__' + idx,
+      color: (hidden || searchHide) ? '#111' : (color + '55'),
+      width: 0.5
+    });
+  });
+
+  return { nodes, links };
+}
+
+/* ── Init ─────────────────────────────────────────────────────────────── */
+window.addEventListener('load', () => {
+  // Legend
+  const legendEl = document.getElementById('legend-items');
+  catKeys.forEach(key => {
+    const m = CAT[key];
+    const count = TOOLS.filter(t => t.c === key).length;
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.dataset.cat = key;
+    item.innerHTML = `
+      <div class="legend-dot" style="background:${m.c}"></div>
+      <span class="legend-label">${m.i} ${key}</span>
+      <span class="legend-count">${count}</span>
+    `;
+    item.addEventListener('click', () => toggleCat(key, item));
+    legendEl.appendChild(item);
+  });
+
+  // Stats
+  document.getElementById('stat-t').textContent = TOOLS.length;
+  document.getElementById('stat-c').textContent = catKeys.length;
+  document.getElementById('stat-v').textContent = TOOLS.length;
+
+  // Build graph
+  const gd = buildGraphData();
+
+  const Graph = ForceGraph3D()
+    (document.getElementById('graph-container'))
+    .graphData(gd)
+    .backgroundColor('#0a0806')
+    .showNavInfo(false)
+    .nodeLabel(node => node.name)
+    .nodeColor(node => node.color)
+    .nodeVal(node => node.val)
+    .nodeOpacity(0.92)
+    .nodeResolution(node => node.type === 'core' ? 16 : node.type === 'cat' ? 12 : 6)
+    .linkWidth(link => link.width || 0.5)
+    .linkColor(link => link.color || '#2e2a24')
+    .linkOpacity(0.6)
+    .linkDirectionalParticles(link => link.width > 1 ? 2 : 0)
+    .linkDirectionalParticleWidth(1.2)
+    .linkDirectionalParticleColor(link => link.color)
+    .onNodeHover(node => {
+      document.body.style.cursor = node ? 'pointer' : 'default';
+      if (!node) return;
+      if (node.type === 'tool') {
+        const m = CAT[node.group];
+        document.getElementById('detail-icon').textContent = node.icon;
+        document.getElementById('detail-name').textContent = node.name;
+        document.getElementById('detail-cat').textContent = node.group;
+        document.getElementById('detail-cat').style.color = m ? m.c : '#888';
+        document.getElementById('detail-desc').textContent = node.desc || '—';
+        document.getElementById('detail-badge').textContent = node.oss ? 'OSS' : 'COMMERCIAL';
+        document.getElementById('detail-badge').style.display = 'inline-block';
+      } else if (node.type === 'cat') {
+        document.getElementById('detail-icon').textContent = node.icon;
+        document.getElementById('detail-name').textContent = node.name;
+        document.getElementById('detail-cat').textContent = node.count + ' tools';
+        document.getElementById('detail-cat').style.color = node.color;
+        document.getElementById('detail-desc').textContent = node.desc || '';
+        document.getElementById('detail-badge').style.display = 'none';
+      } else if (node.type === 'core') {
+        document.getElementById('detail-icon').textContent = '🌌';
+        document.getElementById('detail-name').textContent = 'TSURUGI';
+        document.getElementById('detail-cat').textContent = 'LAB 2024.1';
+        document.getElementById('detail-cat').style.color = '#c0392b';
+        document.getElementById('detail-desc').textContent = `${TOOLS.length} tools across ${catKeys.length} categories`;
+        document.getElementById('detail-badge').style.display = 'none';
+      }
+    })
+    .onNodeClick(node => {
+      const dist = 80;
+      const distRatio = 1 + dist / Math.hypot(node.x || 1, node.y || 1, node.z || 1);
+      Graph.cameraPosition(
+        { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+        node,
+        1800
+      );
+    })
+    .onBackgroundClick(() => {
+      Graph.cameraPosition({ x: 0, y: 0, z: 400 }, { x: 0, y: 0, z: 0 }, 1500);
+    });
+
+  // Tweak forces for better layout
+  Graph.d3Force('charge').strength(-60);
+  Graph.d3Force('link').distance(link => {
+    if (link.width > 1) return 80;  // core → cat
+    return 35;                       // cat → tool
+  });
+
+  // Store graph reference
+  window._graph = Graph;
+
+  // Hide loader
+  setTimeout(() => {
+    document.getElementById('loading').style.opacity = '0';
+    setTimeout(() => document.getElementById('loading').style.display = 'none', 400);
+  }, 1200);
+
+  // Search
+  document.getElementById('nebula-search').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    updateGraph();
+    const vis = searchQuery
+      ? TOOLS.filter(t => t.n.toLowerCase().includes(searchQuery.toLowerCase()) || t.p.toLowerCase().includes(searchQuery.toLowerCase())).length
+      : TOOLS.length - [...hiddenCats].reduce((a, c) => a + TOOLS.filter(t => t.c === c).length, 0);
+    document.getElementById('stat-v').textContent = vis;
+  });
+
+  function toggleCat(key, itemEl) {
+    if (hiddenCats.has(key)) hiddenCats.delete(key);
+    else hiddenCats.add(key);
+    itemEl.classList.toggle('dimmed', hiddenCats.has(key));
+    updateGraph();
+    const vis = TOOLS.length - [...hiddenCats].reduce((a, c) => a + TOOLS.filter(t => t.c === c).length, 0);
+    document.getElementById('stat-v').textContent = vis;
+  }
+
+  function updateGraph() {
+    const gd = buildGraphData();
+    Graph.graphData(gd);
+  }
+});
+</script>
 </body>
 </html>
