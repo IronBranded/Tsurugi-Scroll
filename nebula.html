@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tsurugi Nebula | 3D Visualization</title>
+    <script src="https://unpkg.com/3d-force-graph"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; background-color: #0e0c0b; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+        
+        #nebula-interface {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .panel {
+            background: rgba(14, 12, 11, 0.85);
+            border: 1px solid #c0392b;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+            pointer-events: all;
+        }
+
+        h1 { color: #c0392b; margin: 0 0 5px 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        #node-details { font-size: 0.85rem; line-height: 1.4; color: #aaa; }
+        #node-name { color: #fff; font-weight: bold; font-size: 1rem; margin-bottom: 5px; }
+
+        .legend { margin-top: 15px; font-size: 0.7rem; border-top: 1px solid #333; pt: 10px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 3px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #0e0c0b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(192, 57, 43, 0.3);
+            border-top-color: #c0392b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <div>Initializing Tool Constellation...</div>
+    </div>
+
+    <div id="nebula-interface">
+        <div class="panel">
+            <h1>Tsurugi Nebula</h1>
+            <div id="node-details">
+                <div id="node-name">Select a node</div>
+                <div id="node-desc">Hover over a tool or category to see connections. Click to focus.</div>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><span class="dot" style="background:#ffffff"></span> Main Category</div>
+                <div class="legend-item"><span class="dot" style="background:#c0392b"></span> Sub-Category</div>
+                <div class="legend-item"><span class="dot" style="background:#3498db"></span> Tool</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="3d-graph"></div>
+
+    <script>
+        async function buildNebula() {
+            try {
+                const response = await fetch('index.html');
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                const gData = { nodes: [], links: [] };
+                const rootId = "TSURUGI_CORE";
+
+                // Add Root
+                gData.nodes.push({ id: rootId, name: "TSURUGI LINUX", val: 20, color: '#fff', type: 'root' });
+
+                let currentH1 = null;
+                let currentH2 = null;
+                let currentH3 = null;
+
+                // Walk the DOM to preserve hierarchy
+                const container = doc.querySelector('.map-container') || doc.body;
+                const elements = container.querySelectorAll('.cat-h1, .cat-h2, .cat-h3, .tool-item');
+
+                elements.forEach(el => {
+                    const text = el.textContent.trim();
+                    
+                    if (el.classList.contains('cat-h1')) {
+                        currentH1 = text;
+                        gData.nodes.push({ id: text, name: text, val: 12, color: '#ffffff', type: 'h1' });
+                        gData.links.push({ source: rootId, target: text });
+                        currentH2 = null; currentH3 = null;
+                    } 
+                    else if (el.classList.contains('cat-h2')) {
+                        currentH2 = text;
+                        gData.nodes.push({ id: text, name: text, val: 8, color: '#c0392b', type: 'h2' });
+                        gData.links.push({ source: currentH1 || rootId, target: text });
+                        currentH3 = null;
+                    } 
+                    else if (el.classList.contains('cat-h3')) {
+                        currentH3 = text;
+                        gData.nodes.push({ id: text, name: text, val: 6, color: '#e67e22', type: 'h3' });
+                        gData.links.push({ source: currentH2 || currentH1 || rootId, target: text });
+                    } 
+                    else if (el.classList.contains('tool-item')) {
+                        const parent = currentH3 || currentH2 || currentH1 || rootId;
+                        gData.nodes.push({ id: `${parent}_${text}`, name: text, val: 2, color: '#3498db', type: 'tool' });
+                        gData.links.push({ source: parent, target: `${parent}_text` });
+                    }
+                });
+
+                const Graph = ForceGraph3D()
+                    (document.getElementById('3d-graph'))
+                    .graphData(gData)
+                    .backgroundColor('#0e0c0b')
+                    .nodeLabel('name')
+                    .nodeColor(node => node.color)
+                    .nodeVal(node => node.val)
+                    .linkDirectionalParticles(2)
+                    .linkDirectionalParticleSpeed(0.005)
+                    .onNodeHover(node => {
+                        if(node) {
+                            document.getElementById('node-name').textContent = node.name;
+                            document.getElementById('node-desc').textContent = `Type: ${node.type.toUpperCase()}`;
+                        }
+                    })
+                    .onNodeClick(node => {
+                        const distance = 100;
+                        const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+                        Graph.cameraPosition(
+                            { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+                            node, 
+                            2000
+                        );
+                    });
+
+                document.getElementById('loading-screen').style.display = 'none';
+
+            } catch (err) {
+                console.error("Nebula Generation Failed:", err);
+                document.getElementById('loading-screen').innerHTML = "Error loading index.html. Ensure you are using a local server.";
+            }
+        }
+
+        buildNebula();
+    </script>
+</body>
+</html>
