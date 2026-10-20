@@ -1,0 +1,20 @@
+window.TS_DATA=window.TS_DATA||{};
+window.TS_DATA["NFC"]=[
+{n:'Cardpeek',t:'GUI',p:'Read and inspect smartcard/NFC card contents',s:'Extract card application data from a seized access badge for ownership correlation.',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mfoc',t:'CLI',p:'Mifare Classic offline brute-force/restore tool',s:'Recover keys from a cloned Mifare Classic card to examine its access logs.',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mfcuk',t:'CLI',p:'Mifare Classic cracking toolkit (nested attacks)',s:'Demonstrate key recovery on a suspect badge to prove cloning during an insider investigation.',c:'NFC',sub:'',ev:[],oss:true},
+{n:'nfc-list',t:'CLI',p:'List NFC devices and tags attached to the reader',s:'Enumerate nearby NFC tags as part of device triage on-site.',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-info',t:'CLI',p:'Show DesFire tag metadata and applications',s:'Enumerate appIDs and file types on a found access token to map usage.',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-classic-read-ndef',t:'CLI',p:'Read NDEF records from MIFARE Classic tags',s:'Extract stored URLs or text from a recovered MIFARE tag used in phishing/staging.',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-classic-format',t:'CLI',p:'Format MIFARE Classic tags',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-classic-write-ndef',t:'CLI',p:'Write NDEF records to MIFARE Classic',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-access',t:'CLI',p:'Change DESFire access rights',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-create-ndef',t:'CLI',p:'Create an NDEF application on DESFire',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-ev1-configure-ats',t:'CLI',p:'Configure DESFire EV1 ATS',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-configure-default-key',t:'CLI',p:'Configure the DESFire default key',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-configure-random-uid',t:'CLI',p:'Enable DESFire random UID',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-format',t:'CLI',p:'Format a DESFire tag',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-read-ndef',t:'CLI',p:'Read NDEF records from DESFire',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-desfire-write-ndef',t:'CLI',p:'Write NDEF records to DESFire',s:'',c:'NFC',sub:'',ev:[],oss:true},
+{n:'mifare-ultralight-info',t:'CLI',p:'Show MIFARE Ultralight tag info',s:'',c:'NFC',sub:'',ev:[],oss:true},
+];
