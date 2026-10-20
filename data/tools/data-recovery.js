@@ -1,0 +1,21 @@
+window.TS_DATA=window.TS_DATA||{};
+window.TS_DATA["Data Recovery"]=[
+{n:'afro',t:'CLI',p:'Recover deleted or corrupted files from disks and partitions',s:'Attempt file recovery from a partially overwritten external drive involved in insider data deletion.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'catfish',t:'GUI',p:'File search tool for locating files by name or content',s:'Locate recovered or renamed files across mounted forensic images.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'ext3grep',t:'CLI',p:'Recover deleted files from ext3 filesystems',s:'Retrieve deleted Linux log files for intrusion reconstruction.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'ext4magic',t:'CLI',p:'Recover deleted files from ext4 filesystems',s:'Restore erased evidence files from a Linux server\'s ext4 volume.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'extundelete',t:'CLI',p:'Undelete files from ext3/ext4 filesystems using journal analysis',s:'Retrieve deleted bash history and script files on a compromised host.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'foremost',t:'CLI',p:'File carving tool based on headers and footers',s:'Recover deleted JPEG and DOCX files from a raw forensic image.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'keyhunter',t:'CLI',p:'Search and recover cryptographic keys from memory or disk',s:'Recover private encryption keys used to secure exfiltrated data.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'myrescue',t:'CLI',p:'Data recovery tool for reading from damaged block devices',s:'Extract data from failing disks by skipping unreadable sectors intelligently.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'photorec',t:'CLI',p:'Recover lost files from disks, memory cards, and images',s:'Restore deleted media and documents from a formatted USB drive.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'recoverdm',t:'CLI',p:'Recover data from optical discs (CD/DVD)',s:'Recover partial data from a damaged CD used to transport exfiltrated data.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'RecuperaBit',t:'CLI',p:'Reconstruct files from NTFS raw disk images',s:'Rebuild entire file structure from a deleted NTFS partition.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'safecopy',t:'CLI',p:'Recover data from damaged storage with retry mechanisms',s:'Salvage files from drives with intermittent read errors.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'scalpel',t:'CLI',p:'Fast file carver for multiple formats',s:'Recover files based on signatures during triage of corrupted images.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'testdisk',t:'CLI',p:'Partition repair and recovery tool',s:'Recover lost partitions and make images of restructured volumes for analysis.',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'myrescue-bitmap2ppm',t:'CLI',p:'Convert a myrescue bitmap to a PPM image',s:'',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'myrescue-stat',t:'CLI',p:'Report myrescue recovery statistics',s:'',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'recoverjpeg',t:'CLI',p:'Carve JPEG files from raw data',s:'',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+{n:'recovery.py',t:'CLI',p:'',s:'',c:'Data Recovery',sub:'',ev:['Disk Image'],oss:true},
+];
