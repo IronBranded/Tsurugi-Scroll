@@ -1,9 +1,9 @@
 # Tsurugi Scroll
 
 > **Multi DFIR · Malware Analysis · Threat Hunting — tool reference map**  
-> Based on **Tsurugi Linux [LAB] — Tools Listing 2024.1**
+> Based on **Tsurugi Linux [LAB] — Tools Listing 26.03**
 
-A single self-contained HTML file that maps all **1,156 tools** from the Tsurugi Linux LAB distribution into an interactive, searchable, filterable reference. Open it locally in any browser — no server, no dependencies, no build step.
+A single self-contained HTML file that maps all **1,096 tools** from the Tsurugi Linux LAB distribution into an interactive, searchable, filterable reference. Open it locally in any browser — no server, no dependencies, no build step.
 
 ---
 
@@ -18,7 +18,7 @@ A single self-contained HTML file that maps all **1,156 tools** from the Tsurugi
 
 | Feature | Description |
 |---|---|
-| **1,156 tools** | All tools from Tsurugi LAB 2024.1, parsed directly from the source document |
+| **1,096 tools** | Tools from Tsurugi LAB 2024.1, plus the 26.03 listing additions |
 | **26 categories** | Imaging · Memory · Malware · Network · Artifacts · OSINT · Mobile · Cloud · and more |
 | **50+ subcategories** | Drill into NTFS, Registry, Zeek, Android, WhatsApp, Cryptocurrency, etc. |
 | **DFIR Scenarios** | Every tool includes a real-world forensic use case from the Tsurugi documentation |
@@ -83,24 +83,24 @@ Or just download `tsurugi-scroll.html` and open it in any modern browser.
 
 | Category | Tools | Notable |
 |---|---|---|
-| Artifacts | 190 | Registry · NTFS · Browser · Email · Windows Logs · ZFS · XFS · APFS |
-| Network | 156 | Wireshark · Zeek · tcpdump · NetworkMiner · nmap |
-| Malware | 111 | Radare2 · Ghidra · YARA · oletools · binwalk · peepdf |
-| OSINT | 95 | Maltego · Sherlock · theHarvester · Maigret · Shodan |
+| Artifacts | 182 | Registry · NTFS · Browser · Email · Windows Logs · ZFS · XFS · APFS |
+| Network | 154 | Wireshark · Zeek · tcpdump · NetworkMiner · nmap |
+| Malware | 99 | Radare2 · Ghidra · YARA · oletools · binwalk · peepdf |
+| OSINT | 82 | Maltego · Sherlock · theHarvester · Maigret · Shodan |
 | Mounting | 57 | dislocker · VeraCrypt · ewfmount · xmount · affuse |
-| Mobile | 56 | adb · iLEAPP · mvt-android · whapa · Andriller |
-| Passwords | 43 | hashcat · John the Ripper · hydra · ophcrack |
-| Timeline | 42 | log2timeline/plaso · Timesketch · Autopsy · mactime |
+| Mobile | 73 | adb · iLEAPP · mvt-android · whapa · Andriller |
+| Passwords | 34 | hashcat · John the Ripper · hydra · ophcrack |
+| Timeline | 41 | log2timeline/plaso · Timesketch · Autopsy · mactime |
 | AI & Vision | 42 | tesseract · OpenCV face recognition · OCR pipeline |
-| Data Recovery | 39 | photorec · testdisk · scalpel · foremost · extundelete |
-| Memory | 12 | Volatility3 · avml · WinSuperMem · rsakeyfind |
+| Data Recovery | 18 | photorec · testdisk · scalpel · foremost · extundelete |
+| Memory | 10 | Volatility3 · avml · WinSuperMem · rsakeyfind |
 | + 15 more | … | … |
 
 ---
 
 ## Data Source
 
-All tool data is extracted directly from the official **Tsurugi Linux [LAB] SCROLL — Tools Listing 2024.1** document using `python-docx`, parsing every table row with:
+All tool data is extracted directly from the official **Tsurugi Linux [LAB] SCROLL — Tools Listing 26.03** document using `python-docx`, parsing every table row with:
 
 - Tool name
 - Type (CLI / GUI)
@@ -108,6 +108,8 @@ All tool data is extracted directly from the official **Tsurugi Linux [LAB] SCRO
 - DFIR scenario / use case
 
 Evidence type tags and open-source status are enriched programmatically based on category and subcategory.
+
+**Tools Listing 26.03 update:** additional tool names were merged from https://tsurugi-linux.org/documentation_tsurugi_linux_tools_listing_2026.php. That page lists names only, so the purposes of the added tools were written by hand and their DFIR scenarios are still empty.
 
 ---
 
