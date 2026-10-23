@@ -9,7 +9,7 @@ window.TS_DATA["Steganography"]=[
 {n:'pngcheck',t:'CLI',p:'Verify and report PNG file integrity and chunks',s:'Detect corrupted or tampered PNG chunks which may contain hidden data.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},
 {n:'steghide',t:'CLI',p:'Hide/extract data in images/audio using passphrase',s:'Attempt to extract data from images suspected of carrying stego payloads.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},
 {n:'stegoveritas',t:'CLI',p:'Automated steganography analysis framework',s:'Run a comprehensive stego/detection pipeline across large image collections.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},
-{n:'stegosuit',t:'GUI',p:'Stego analysis and extraction GUI',s:'Visual stego inspection of suspect images for evidence preservation.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},
+{n:'stegosuite',t:'GUI',p:'Stego analysis and extraction GUI',s:'Visual stego inspection of suspect images for evidence preservation.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},
 {n:'vinetto',t:'CLI',p:'Windows thumbnail (Thumbs.db) forensic tool',s:'Extract embedded thumbnail images from Windows Thumbs.db files.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},
 {n:'findimagedupes',t:'CLI',p:'Find duplicate and near-duplicate images',s:'Identify image reposting, multiple exfil copies, or mass distribution.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},
 {n:'ForensicPlate',t:'CLI',p:'Detect and read license plates from images/video (ALPR)',s:'Extract plate numbers from images in a car-park incident to identify suspect vehicles.',c:'Steganography',sub:'',ev:['Disk Image'],oss:true},

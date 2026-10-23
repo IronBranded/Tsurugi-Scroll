@@ -21,4 +21,6 @@ window.TS_DATA["Tunnels & Remote"]=[
 {n:'speedtest-cli',t:'CLI',p:'Command-line bandwidth test',s:'',c:'Tunnels & Remote',sub:'',ev:[],oss:true},
 {n:'x2vnc',t:'CLI',p:'Control a remote VNC desktop with local mouse and keyboard',s:'',c:'Tunnels & Remote',sub:'',ev:[],oss:true},
 {n:'pingtest',t:'CLI',p:'',s:'',c:'Tunnels & Remote',sub:'',ev:[],oss:true},
+{n:'Remotedesktop Connect',t:'GUI',p:'',s:'',c:'Tunnels & Remote',sub:'',ev:[],oss:true},
+{n:'Remote Desktop Client',t:'GUI',p:'',s:'',c:'Tunnels & Remote',sub:'',ev:[],oss:true},
 ];
