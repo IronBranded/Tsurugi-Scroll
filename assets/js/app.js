@@ -345,13 +345,14 @@ function renderHome(){
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
         <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:2px 10px;border-radius:2px;background:rgba(192,57,43,.1);color:rgba(192,57,43,.65);border:1px solid rgba(192,57,43,.25);letter-spacing:1.5px">TOOLS LISTING 26.03</span>
       </div>
-      <p class="hero-sub">${TOTAL} tools &nbsp;·&nbsp; ${ALL_CATS.length} categories &nbsp;·&nbsp; ${RUNBOOKS.length} runbooks<br>
+      <p class="hero-sub">${TOTAL.toLocaleString('en-US')} tools &nbsp;·&nbsp; ${ALL_CATS.length} categories &nbsp;·&nbsp; ${RUNBOOKS.length} runbooks<br>
         <span style="font-size:10px;color:var(--text4)">Use the search bar above or browse categories below</span>
       </p>
     </div>
     <div class="wrap">
       <div class="sec-lbl">Browse by Category</div>
       <div class="grid-cats">${catGrid}</div>
+      <p style="font-size:10px;color:var(--text4);margin-top:10px;line-height:1.6;font-family:'Inter',sans-serif">Badges count the cards in each category. Some tools appear in more than one category and a few cards group several utilities, so the ${ENTRIES.toLocaleString('en-US')} cards cover ${TOTAL.toLocaleString('en-US')} distinct tools.</p>
       <div class="divider"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div class="sec-lbl" style="margin-bottom:0">Investigation Runbooks</div>
@@ -844,7 +845,7 @@ document.querySelectorAll('.bm-tab').forEach(btn=>btn.addEventListener('click',(
 /* ═══════════════════════════════════════════════════════════════════════════
    BOOTSTRAP
 ═══════════════════════════════════════════════════════════════════════════ */
-document.getElementById('stat-tools').textContent=TOTAL;
+document.getElementById('stat-tools').textContent=TOTAL.toLocaleString('en-US');
 updateBmBadge();
 readHash();
 buildTabs();

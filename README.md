@@ -3,7 +3,7 @@
 > **Multi DFIR · Malware Analysis · Threat Hunting — tool reference map**
 > Based on **Tsurugi Linux [LAB] — Tools Listing 26.03**
 
-A static site (plain HTML, CSS and JavaScript, no build step, no dependencies) that maps **1,098 tools** from the Tsurugi Linux LAB distribution into a searchable, filterable reference. Each tool category lives in its own data module, so a category can be updated without touching the rest of the site.
+A static site (plain HTML, CSS and JavaScript, no build step, no dependencies) that maps **1,087 tools** from the Tsurugi Linux LAB distribution into a searchable, filterable reference. Each tool category lives in its own data module, so a category can be updated without touching the rest of the site.
 
 ---
 
@@ -19,10 +19,10 @@ A static site (plain HTML, CSS and JavaScript, no build step, no dependencies) t
 
 | Feature | Description |
 |---|---|
-| **1,098 tools** | 561 from the Tsurugi LAB 2024.1 tools document, 537 added from the 26.03 web listing |
+| **1,087 tools** | Every tool on the 26.03 listing (1,083) plus 4 kept from the 2024.1 document, shown as 1,098 cards (see [Tool Coverage](#tool-coverage)) |
 | **26 categories** | Imaging · Memory · Malware · Network · Artifacts · OSINT · Mobile · Cloud · and more |
 | **85 subcategories** | In 14 categories: NTFS, Registry, Zeek / Bro, Android, WhatsApp, Cryptocurrency, OCR, etc. |
-| **DFIR scenarios** | 542 tools carry a forensic use case. The 26.03 additions do not have one yet (see [Data Source](#data-source)) |
+| **DFIR scenarios** | 542 of the 1,098 cards carry a forensic use case. The 26.03 additions do not have one yet (see [Data Source](#data-source)) |
 | **Investigation runbooks** | 6 step-by-step SOPs linking tools into complete workflows; every step opens its tool |
 | **Filters** | Inside a category: subcategory, type (CLI / GUI / …) and evidence type chips, each with a live count, plus a filter box |
 | **Evidence types** | Disk Image · Memory Dump · PCAP · Registry Hive · Browser Artifacts · Mobile Backup · Log Files · Email · Office Documents |
@@ -56,7 +56,7 @@ A static site (plain HTML, CSS and JavaScript, no build step, no dependencies) t
 
 ## Tool Coverage
 
-| Category | Tools | Notable |
+| Category | Cards | Notable |
 |---|---|---|
 | Artifacts | 182 | RegRipper · AnalyzeMFT · chainsaw · bulk_extractor · hindsight · readpst |
 | Network | 154 | Wireshark · zeek · tcpdump · NetworkMiner · nmap · suricata |
@@ -71,7 +71,13 @@ A static site (plain HTML, CSS and JavaScript, no build step, no dependencies) t
 | Office & Docs | 28 | LibreOffice · csvlook · in2csv · xlsx2csv |
 | + 15 more | 242 | Steganography 27 · Image Formats 25 · Multimedia 23 · Tunnels & Remote 23 · Virtual & Crypto 22 · Diff Tools 21 · Data Recovery 18 · NFC 17 · Hashing 14 · Imaging 11 · Reporting 11 · Memory 10 · Secure Delete 8 · Cloud 7 · Fuzzy Hashing 5 |
 
-Counts are per category. 17 tools are listed in two categories (for example `exiftool` in Artifacts and Steganography), as in the source document.
+Counts are cards per category and add up to **1,098 cards for 1,087 distinct tools**, because:
+
+- 17 tools are listed in two categories (for example `exiftool` in Artifacts and Steganography), as in the source document;
+- `aws CLI` (Cloud) and `aws_cli` (Mounting) are the same tool, spelled both ways on the listing;
+- two cards group several utilities: `sha1sum / sha224sum / sha256sum / sha384sum / sha512sum` (5) and `hashdeep / md5deep / sha1deep / sha256deep` (4).
+
+`scripts/build-data.js` computes both numbers; the site shows the distinct count.
 
 ---
 
@@ -94,12 +100,14 @@ Each step has a tool, an action and an analyst note. Tool names are clickable an
 
 The data comes from two Tsurugi sources:
 
-1. **Tsurugi Linux [LAB] 2024.1 tools document.** 561 tools were extracted from its tables with `python-docx`: name, type (CLI / GUI), purpose and DFIR scenario. Evidence types and open-source status were then filled in per category and subcategory.
-2. **[Tools listing 26.03](https://tsurugi-linux.org/documentation_tsurugi_linux_tools_listing_2026.php)** on tsurugi-linux.org. That page lists **names only**. 537 tools from it were added:
+1. **Tsurugi Linux [LAB] 2024.1 tools document.** 561 entries (548 distinct tools) were extracted from its tables with `python-docx`: name, type (CLI / GUI), purpose and DFIR scenario. Evidence types and open-source status were then filled in per category and subcategory.
+2. **[Tools listing 26.03](https://tsurugi-linux.org/documentation_tsurugi_linux_tools_listing_2026.php)** on tsurugi-linux.org. That page lists **names only**. 537 entries from it were added:
    - their **purposes were written by hand**; 41 of them have no purpose yet;
    - their **DFIR scenarios are intentionally empty** until they are written; the modal simply omits the section.
 
 Spellings follow the listing, including `ztreamdump` and `idevicecenterrecovery`. A few tools from the 2024.1 document are not on the 26.03 page and are kept on purpose: `log2timeline` (the page lists PLASO), `hindsight`, `pdfid`, `hydra` (the page lists XHydra) and `NetworkMiner`.
+
+**How the total reconciles with the listing.** The 26.03 page has 1,094 distinct names. Some are its own typos of tools it also lists correctly (`udiskctl`, `recovejpeg`, `cyphey`, `XELFViever`, `bruteforece-wallet`), and some are extra launchers for one tool (`spiderfoot CLI` / `HELP` / `START`, `Maltego Memory Config`, `Catfish file search`, …). Merging those leaves **1,083 distinct tools**, all present here. Adding `hindsight`, `pdfid`, `hydra` and `NetworkMiner` gives **1,087**.
 
 ---
 
@@ -193,7 +201,8 @@ No server is needed. To serve it the way GitHub Pages does, run `python -m http.
 
 ### 26.03 — current
 
-- **Data:** completed the Tools listing 26.03 merge: added `Remotedesktop Connect` and `Remote Desktop Client` (Tunnels & Remote), the only names on the listing with no entry; renamed `stegosuit` to `stegosuite` to match the listing. 1,098 tools.
+- **Data:** completed the Tools listing 26.03 merge: added `Remotedesktop Connect` and `Remote Desktop Client` (Tunnels & Remote), the only names on the listing with no entry; renamed `stegosuit` to `stegosuite` to match the listing. 1,087 distinct tools in 1,098 cards.
+- **Tool count:** the headline now counts distinct tools (1,087) instead of cards (1,098), which double-counted tools listed in two categories.
 - **Removed** the 3D Knowledge Nebula (`nebula.html`) and its buttons. It loaded three.js and 3d-force-graph from CDNs; the site now has no third-party scripts.
 - **Added** `scripts/build-data.js`, which validates the category modules and regenerates `data/counts.js` (it replaces the `modularize.py` that `counts.js` referred to but which was never in the repository).
 - **Fixed** `S` inside the tool modal starring an unrelated tool, and the top bar running off-screen on phones.
@@ -201,12 +210,12 @@ No server is needed. To serve it the way GitHub Pages does, run `python -m http.
 
 ### 26.03 merge and modular split
 
-- Merged the Tools listing 26.03 names into the 2024.1 data: 535 tools added (561 → 1,096), purposes hand-written, scenarios left empty.
+- Merged the Tools listing 26.03 names into the 2024.1 data: 535 entries added (561 → 1,096 cards; 548 → 1,085 distinct tools), purposes hand-written, scenarios left empty.
 - Split the single `index.html` into `assets/` and one data module per category under `data/tools/`.
 
 ### 2024.1
 
-- First version: 561 tools from the Tsurugi Linux [LAB] 2024.1 tools document, 26 categories, 6 runbooks.
+- First version: 561 entries (548 distinct tools) from the Tsurugi Linux [LAB] 2024.1 tools document, 26 categories, 6 runbooks.
 
 ---
 
