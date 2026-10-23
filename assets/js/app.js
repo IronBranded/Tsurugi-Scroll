@@ -345,24 +345,14 @@ function renderHome(){
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
         <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:2px 10px;border-radius:2px;background:rgba(192,57,43,.1);color:rgba(192,57,43,.65);border:1px solid rgba(192,57,43,.25);letter-spacing:1.5px">TOOLS LISTING 26.03</span>
       </div>
-      <p class="hero-sub">${TOTAL} tools &nbsp;·&nbsp; ${ALL_CATS.length} categories &nbsp;·&nbsp; ${RUNBOOKS.length} runbooks<br>
+      <p class="hero-sub">${TOTAL.toLocaleString('en-US')} tools &nbsp;·&nbsp; ${ALL_CATS.length} categories &nbsp;·&nbsp; ${RUNBOOKS.length} runbooks<br>
         <span style="font-size:10px;color:var(--text4)">Use the search bar above or browse categories below</span>
       </p>
     </div>
     <div class="wrap">
       <div class="sec-lbl">Browse by Category</div>
       <div class="grid-cats">${catGrid}</div>
-      <div class="divider"></div>
-      <div style="margin-bottom:20px">
-        <div style="background:var(--bg3);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:2px;padding:16px 20px;display:flex;gap:16px;align-items:center;cursor:pointer" onclick="window.open('nebula.html','_blank')">
-          <div style="font-size:28px;flex-shrink:0;line-height:1">🌐</div>
-          <div style="flex:1">
-            <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--accent3);letter-spacing:.5px;margin-bottom:4px">Knowledge Nebula</div>
-            <div style="font-size:11px;color:var(--text4);font-family:'Inter',sans-serif;line-height:1.5">Interactive 3D force-directed graph — explore all ${TOTAL} tools and ${ALL_CATS.length} categories as a spatial nebula. Rotate, zoom, trace workflows.</div>
-          </div>
-          <div style="font-size:11px;color:var(--accent);font-family:'Courier New',monospace;flex-shrink:0;letter-spacing:1px">OPEN →</div>
-        </div>
-      </div>
+      <p style="font-size:10px;color:var(--text4);margin-top:10px;line-height:1.6;font-family:'Inter',sans-serif">Badges count the cards in each category. Some tools appear in more than one category and a few cards group several utilities, so the ${ENTRIES.toLocaleString('en-US')} cards cover ${TOTAL.toLocaleString('en-US')} distinct tools.</p>
       <div class="divider"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div class="sec-lbl" style="margin-bottom:0">Investigation Runbooks</div>
@@ -759,10 +749,7 @@ document.addEventListener('keydown',e=>{
   if(modalOpen){
     if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('modal-prev')?.click()}
     if(e.key==='ArrowRight'){e.preventDefault();document.getElementById('modal-next')?.click()}
-    if(e.key==='s'||e.key==='S'){
-      const name=TOOLS[modalCurrentIdx]?.n||modalFilteredTools[modalCurrentIdx]?.n;
-      if(name) toggleBm(name,null);
-    }
+    if(e.key==='s'||e.key==='S') document.getElementById('modal-star')?.click();
     if(e.key==='c'||e.key==='C') document.getElementById('copy-cmd')?.click();
     return;
   }
@@ -858,7 +845,7 @@ document.querySelectorAll('.bm-tab').forEach(btn=>btn.addEventListener('click',(
 /* ═══════════════════════════════════════════════════════════════════════════
    BOOTSTRAP
 ═══════════════════════════════════════════════════════════════════════════ */
-document.getElementById('stat-tools').textContent=TOTAL;
+document.getElementById('stat-tools').textContent=TOTAL.toLocaleString('en-US');
 updateBmBadge();
 readHash();
 buildTabs();
