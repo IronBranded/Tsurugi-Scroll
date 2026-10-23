@@ -298,6 +298,13 @@ pre{white-space:pre-wrap;word-break:break-all}
 .gs-section-header{padding:7px 16px;font-size:9px;font-weight:600;letter-spacing:2px;color:var(--text4);text-transform:uppercase;background:var(--bg2);border-bottom:1px solid var(--border2);font-family:'Inter',sans-serif}
 
 /* ── Print ──────────────────────────────────────────────────────────────── */
+/* Phones: keep the top bar inside the viewport */
+@media (max-width:640px){
+  .stat-pill,#version-badge,.topbar-sep{display:none}
+  .logo-text{font-size:11px;letter-spacing:1px}
+  #topbar-search-wrap{margin:0 4px}
+}
+
 @media print{
   #topbar,#tabbar,#bm-panel,#overlay,#kbd-overlay,#gs-overlay,#gs-dropdown,.filterbar,.bm-star,.modal-nav,.modal-close{display:none!important}
   body{background:#fff;color:#000;font-size:11px}

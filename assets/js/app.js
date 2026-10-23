@@ -748,10 +748,7 @@ document.addEventListener('keydown',e=>{
   if(modalOpen){
     if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('modal-prev')?.click()}
     if(e.key==='ArrowRight'){e.preventDefault();document.getElementById('modal-next')?.click()}
-    if(e.key==='s'||e.key==='S'){
-      const name=TOOLS[modalCurrentIdx]?.n||modalFilteredTools[modalCurrentIdx]?.n;
-      if(name) toggleBm(name,null);
-    }
+    if(e.key==='s'||e.key==='S') document.getElementById('modal-star')?.click();
     if(e.key==='c'||e.key==='C') document.getElementById('copy-cmd')?.click();
     return;
   }
